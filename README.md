@@ -1,4 +1,4 @@
-# autoloom
+# AUTOLOOM
 by vie mccoy, jessica taylor, and evan mcmullen for morpheus systems
 
 autoloom is a program that allows you automatically navigate the latent space of base models.
