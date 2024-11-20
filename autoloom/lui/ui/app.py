@@ -150,7 +150,7 @@ class AutoloomApp(App):
         yield Header()
         yield Container(
             Static(ASCII_ART, id="ascii-art"),
-            Static("v0.0.1, by Morpheus Systems", id="version"),
+            Static("LUI v0.0.1, by Morpheus Systems", id="version"),
             Container(
                 Input(placeholder="Enter your prompt...", id="prompt-input"),
                 Select([(
