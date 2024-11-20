@@ -101,7 +101,7 @@ class QuitConfirmationOverlay(Screen):
         elif event.button.id == "cancel-quit-btn":
             self.app.pop_screen()
 
-class AutoloomApp(App):
+class AUTOLOOM(App):
     CSS_PATH = "styles.css"
     BINDINGS = [
         ("ctrl+c", "quit", "Quit"),
