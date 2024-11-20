@@ -19,7 +19,7 @@ poetry run lui
 
 environment setup:
 
-Create a `.env` file in ./autoloom with the following variables:
+create a `.env` file in ./autoloom with the following variables:
 
 ```env
 HYPERBOLIC_API_KEY=your_hyperbolic_key_here
