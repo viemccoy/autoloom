@@ -1,6 +1,7 @@
-# autoloom, by vie mccoy, jessica taylor, and evan mcmullen for morpheus systems
+# autoloom
+by vie mccoy, jessica taylor, and evan mcmullen for morpheus systems
 
-autoloom is a program that allows you automatically navigate the latent space of base models. if you use a classifer agent, you can automatically generate new text using specified criteria. you can also steer the generations manually by assigning a score multiplier to in-progress generations of your choosing.
+autoloom is a program that allows you automatically navigate the latent space of base models.
 
 instructions to use the lui (loom-terminal user interface):
 
