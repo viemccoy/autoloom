@@ -76,8 +76,11 @@ class QuitConfirmationOverlay(Screen):
         
         yield Container(
             Container(
-                Static("Do you want to copy the session history before quitting?"),
-                Static(full_state, id="quit-state-text"),
+                Container(
+                    Static("Do you want to copy the session history before quitting?"),
+                    Static(full_state, id="quit-state-text"),
+                    id="scroll-container"
+                ),
                 Container(
                     Button("Copy & Quit", id="copy-quit-btn"),
                     Button("Just Quit", id="just-quit-btn"),
