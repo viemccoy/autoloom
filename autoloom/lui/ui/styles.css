@@ -1,0 +1,257 @@
+Screen {
+    background: #0a0510;
+    scrollbar-background: #2d1635;
+    scrollbar-color: #a855f7;
+    scrollbar-size: 2 1;
+    layers: base overlay;
+}
+
+#main-container {
+    width: 100%;
+    height: 100%;
+    layout: grid;
+    grid-size: 1;
+    grid-rows: 20% 2% 79% 1%;
+    padding: 1;
+}
+
+/* Header */
+#ascii-art {
+    width: 100%;
+    height: 100%;
+    color: #a855f7;
+    background: #130a17;
+    border: double #a855f7;
+    content-align: center middle;
+}
+
+#version {
+    width: 100%;
+    height: 100%;
+    color: #d8b4fe;
+    content-align: center middle;
+}
+
+/* Input Area */
+#input-container {
+    width: 100%;
+    height: 100%;
+    layout: grid;
+    grid-size: 1;
+    grid-rows: 25% 25% 25% 25%;
+    background: #130a17;
+    border: heavy #a855f7;
+    padding: 1;
+}
+
+#prompt-input {
+    width: 100%;
+    border: solid #a855f7;
+    background: #1a0d1f;
+    color: #ffffff;
+}
+
+#model-select {
+    width: 100%;
+    border: solid #a855f7;
+    background: #1a0d1f;
+    color: #ffffff;
+}
+
+#settings {
+    layout: grid;
+    grid-size: 4;
+    grid-gutter: 1;
+    width: 100%;
+    background: #1a0d1f;
+    border: solid #a855f7;
+    padding: 1;
+}
+
+#settings Input {
+    background: #2d1635;
+    border: solid #a855f7;
+    color: #ffffff;
+    text-align: center;
+}
+
+#generate-btn {
+    width: 100%;
+    color: #ffffff;
+    background: #2d1635;
+    border: heavy #a855f7;
+}
+
+/* Output Area */
+#generation-view {
+    width: 100%;
+    height: 100%;
+    layout: grid;
+    grid-size: 1;
+    grid-rows: 1fr 3;
+    background: #130a17;
+    border: heavy #a855f7;
+}
+
+#generations {
+    width: 100%;
+    background: #130a17;
+    overflow-y: scroll;
+    scrollbar-background: #2d1635;
+    scrollbar-color: #a855f7;
+    scrollbar-size: 2 1;
+    padding: 1;
+}
+
+#timer {
+    width: 100%;
+    height: 3;
+    content-align: center middle;
+    color: #d8b4fe;
+    background: #2d1635;
+    border-top: solid #a855f7;
+    text-style: bold italic;
+}
+
+/* Generated Content Boxes */
+.generation-box {
+    width: 100%;
+    background: #1a0d1f;
+    color: #ffffff;
+    border: solid #a855f7;
+    padding: 1;
+    margin-bottom: 1;
+    min-height: 3;
+}
+
+.winner-box {
+    width: 100%;
+    background: #2d1635;
+    color: #ffffff;
+    border: double #d8b4fe;
+    padding: 1;
+    margin-bottom: 1;
+    min-height: 3;
+}
+
+/* Interactive States */
+.generation-box:hover {
+    background: #2d1635;
+    border: heavy #d8b4fe;
+    color: #fae8ff;
+}
+
+.winner-box:hover {
+    background: #4c2760;
+    border: heavy #fae8ff;
+    color: #fae8ff;
+}
+
+#generate-btn:hover {
+    background: #4c2760;
+    border: heavy #d8b4fe;
+}
+
+Input:focus, Select:focus {
+    border: heavy #d8b4fe;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#overlay {
+    layer: overlay;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 5, 16, 0.95);
+    align: center middle;
+    padding: 2;
+}
+
+#overlay-content {
+    width: 80%;
+    height: 80%;
+    background: #130a17;
+    border: heavy #a855f7;
+    padding: 1;
+}
+
+#completion-text {
+    width: 100%;
+    height: 90%;
+    background: #1a0d1f;
+    color: #ffffff;
+    border: solid #a855f7;
+    padding: 1;
+    overflow-y: scroll;
+}
+
+#overlay-buttons {
+    width: 100%;
+    height: 10%;
+    layout: horizontal;
+    align: center middle;
+    padding-top: 1;
+}
+
+#overlay-buttons Button {
+    margin: 0 1;
+    min-width: 20;
+    background: #2d1635;
+    color: #ffffff;
+    border: solid #a855f7;
+}
+
+#overlay-buttons Button:hover {
+    background: #4c2760;
+    border: heavy #d8b4fe;
+}
+
+#quit-overlay {
+    layer: overlay;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 5, 16, 0.95);
+    align: center middle;
+    padding: 2;
+}
+
+#quit-content {
+    width: 80%;
+    height: 60%;
+    background: #130a17;
+    border: heavy #a855f7;
+    padding: 1;
+}
+
+#quit-state-text {
+    width: 100%;
+    height: 80%;
+    background: #1a0d1f;
+    color: #ffffff;
+    border: solid #a855f7;
+    padding: 1;
+    overflow-y: scroll;
+}
+
+#quit-buttons {
+    width: 100%;
+    height: 20%;
+    layout: horizontal;
+    align: center middle;
+    padding-top: 1;
+}
+
+#quit-buttons Button {
+    margin: 0 1;
+    min-width: 20;
+    background: #2d1635;
+    color: #ffffff;
+    border: solid #a855f7;
+}
+
+#quit-buttons Button:hover {
+    background: #4c2760;
+    border: heavy #d8b4fe;
+}
