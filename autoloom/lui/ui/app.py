@@ -38,7 +38,10 @@ class CompletionOverlay(Screen):
     def compose(self) -> ComposeResult:
         yield Container(
             Container(
-                Static(self.completion_text, id="completion-text"),
+                Container(
+                    Static(self.completion_text, id="completion-text"),
+                    id="scroll-container"
+                ),
                 Container(
                     Button("Copy", id="copy-btn"),
                     Button("Return", id="return-btn"),
@@ -55,7 +58,6 @@ class CompletionOverlay(Screen):
         elif event.button.id == "return-btn":
             self.app.pop_screen()
 
-# Add this new class after CompletionOverlay
 class QuitConfirmationOverlay(Screen):
     """Overlay screen for confirming quit and offering to copy state"""
     
@@ -366,7 +368,7 @@ class AutoloomApp(App):
             # Countdown phase
             timer = self.query_one("#timer")
             try:
-                timer.update("Press Ctrl+Space to choose your own favorite")
+                #timer.update("Press Ctrl+Space to choose your own favorite")
                 
                 for i in range(10, 0, -1):
                     if self.interrupted:
@@ -374,7 +376,8 @@ class AutoloomApp(App):
                         await self.prompt_manual_selection()
                         return  # End this generation cycle after manual selection
                     
-                    timer.update(f"Continuing with selected generation in {i}... (Ctrl+Space to interrupt)")
+                    # timer.update(f"Continuing with selected generation in {i}... (Ctrl+Space to interrupt)")
+                    timer.update(f"Continuing with selected generation in {i}...") # add ctrl+space back when functionality is restored
                     await asyncio.sleep(1)
             
                 # If we get here, no interruption occurred
