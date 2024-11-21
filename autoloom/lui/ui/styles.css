@@ -38,7 +38,7 @@ Screen {
     height: 100%;
     layout: grid;
     grid-size: 1;
-    grid-rows: 25% 25% 25% 25%;
+    grid-rows: 20% 20% 20% 20% 20%;
     background: #130a17;
     border: heavy #a855f7;
     padding: 1;
@@ -80,6 +80,7 @@ Screen {
     color: #ffffff;
     background: #2d1635;
     border: heavy #a855f7;
+    align: center middle;
 }
 
 /* Output Area */

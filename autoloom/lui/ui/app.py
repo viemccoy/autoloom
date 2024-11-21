@@ -23,7 +23,9 @@ class GenerationBox(Static):
         self.winner = winner
 
     def render(self):
-        return f"👑 {self.text}" if self.winner else self.text
+        # Sanitize text to remove any markup-like content
+        sanitized_text = self.text.replace('[', '\\[').replace(']', '\\]')
+        return f"👑 {sanitized_text}" if self.winner else sanitized_text
 
     def on_mount(self):
         self.add_class("winner-box" if self.winner else "generation-box")
@@ -105,29 +107,26 @@ class AUTOLOOM(App):
     CSS_PATH = "styles.css"
     BINDINGS = [
         ("ctrl+c", "quit", "Quit"),
-        ("ctrl+s", "show_completion", "Show Full Completion"),
-        ("ctrl+space", "interrupt", "")  # Add this binding
+        ("ctrl+s", "show_completion", "Show Full Completion"), 
+        ("ctrl+space", "interrupt", "")
     ]
-    
+
     def __init__(self):
         super().__init__()
         self.generator = Generator()
         self.generations = []
-        self.interrupted = False  # Add this flag
+        self.interrupted = False
         self.original_prompt = ""
-        self._status_task = None
         self.is_closing = False
         self.completion_history = []
-    
-    def action_interrupt(self):
-        """Handle interrupt action"""
-        self.interrupted = True
-    async def action_quit(self):
-        """Handle quit action"""
+        self._status_task = None 
+
+    async def action_quit(self) -> None:  # Changed back to original quit confirmation
+        """Show quit confirmation overlay"""
         self.push_screen(QuitConfirmationOverlay(self.completion_history))
 
     def action_show_completion(self) -> None:
-        """Show the full completion overlay with history"""
+        """Show the full completion overlay with history without copying"""
         if self.completion_history:
             full_history = "Original Prompt:\n" + self.original_prompt + "\n\n"
             for i, entry in enumerate(self.completion_history, 1):
@@ -146,17 +145,19 @@ class AUTOLOOM(App):
         await self.generator.close()
     
     def compose(self) -> ComposeResult:
-        """Create the UI layout"""
         yield Header()
         yield Container(
             Static(ASCII_ART, id="ascii-art"),
             Static("LUI v0.0.1, by Morpheus Systems", id="version"),
             Container(
                 Input(placeholder="Enter your prompt...", id="prompt-input"),
-                Select([(
-                    "Default Classifier",
-                    "gpt-4o"
-                )], prompt="Select Model", id="model-select"),
+                Select([
+                    ("Llama-405b Base", "meta-llama/Meta-Llama-3.1-405B-FP8")
+                ], prompt="Select Generation Model", id="generation-model-select"),
+                Select([
+                    ("Default gpt-4 Classifier", "gpt-4"),
+                    ("Vie Classifier", "ft:gpt-4o-mini-2024-07-18:reynolds-janus:vie-classifier:AVZGAksQ")
+                ], prompt="Select Classification Model", id="classifier-model-select"),
                 Container(
                     Input(placeholder="Temperature (0.0-1.0)", value="0.7", id="temp-input"),
                     Input(placeholder="Max Tokens", value="100", id="tokens-input"),
@@ -262,7 +263,6 @@ class AUTOLOOM(App):
             asyncio.create_task(self.generate_text())
 
     async def generate_text(self):
-        """Main text generation workflow"""
         try:
             self.interrupted = False
             generations_container = self.query_one("#generations")
@@ -271,6 +271,8 @@ class AUTOLOOM(App):
             
             # Get input values
             prompt = self.query_one("#prompt-input").value
+            generation_model = self.query_one("#generation-model-select").value
+            classifier_model = self.query_one("#classifier-model-select").value
             temperature = float(self.query_one("#temp-input").value)
             max_tokens = int(self.query_one("#tokens-input").value)
             num_generations = int(self.query_one("#gen-count-input").value)
@@ -279,49 +281,26 @@ class AUTOLOOM(App):
                 self.original_prompt = prompt
 
             # Generation phase
-            await self.update_status("Generating")
-            self.generations = []
-            
-            for i in range(num_generations):
-                if i > 0:  # Don't delay before the first generation
-                    await asyncio.sleep(0.5)
-                
-                gen = await self.generator.generate_one(
-                    prompt, 
-                    max_tokens, 
-                    temperature,
-                    is_first_of_round=(i == 0)
-                )
-                
-                # Check for invalid characters or errors
-                try:
-                    gen.encode('utf-8').decode('utf-8')
-                    if any(char.encode('utf-8') == b'\xef\xbf\xbd' for char in gen):
-                        raise ValueError("Invalid character detected")
-                except (UnicodeError, ValueError):
-                    continue  # Retry this generation
-                
-                if gen.startswith(("Error:", "Error in generation:")):
-                    if "Maximum retries" in gen:
-                        generations_container.mount(GenerationBox(
-                            "💥 Generation failed after maximum retries - rate limit exceeded"
-                        ))
-                        await asyncio.sleep(1)
-                        continue
-                    elif "Too many requests" in gen:
-                        continue  # Will be handled by retry logic in generate_one
-                    else:
-                        generations_container.mount(GenerationBox(f"💥 {gen}"))
-                        await asyncio.sleep(1)
-                        continue
+            await self.update_status("Generating in batch")
+            self.generations = await self.generator.generate_batch(
+                prompt,
+                generation_model,
+                max_tokens,
+                temperature,
+                num_generations
+            )
 
-                self.generations.append(gen)
-                generations_container.remove_children()
-                for idx, text in enumerate(self.generations, 1):
-                    generations_container.mount(
-                        GenerationBox(f"Generation {idx}: {text}")
-                    )
-                await asyncio.sleep(0.5)
+            if not self.generations or all(g.startswith("Error:") for g in self.generations):
+                await self.update_status("No successful generations")
+                self.show_input_view()
+                return
+
+            # Update the display
+            generations_container.remove_children()
+            for idx, text in enumerate(self.generations, 1):
+                generations_container.mount(
+                    GenerationBox(f"Generation {idx}: {text}")
+                )
 
             if not self.generations:
                 await self.update_status("No successful generations")
@@ -344,7 +323,11 @@ class AUTOLOOM(App):
                 scored_count = sum(1 for box in gen_boxes if "score:" in box.text)
                 await self.update_status(f"Scored {scored_count}/{len(self.generations)} generations")
 
-            scored_generations = await self.generator.classify(self.generations, update_score)
+            scored_generations = await self.generator.classify(
+                self.generations, 
+                self.query_one("#classifier-model-select").value,
+                update_score
+            )
 
             # Show winner
             await self.update_status("Ranking complete")

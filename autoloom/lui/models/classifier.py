@@ -8,9 +8,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Classifier:
-    def __init__(self):
+    def __init__(self, model="gpt-4"):
         self.url = "https://api.openai.com/v1/chat/completions"
-        self.model = "gpt-4"  # Using standard GPT-4 model
+        self.model = model # Using standard GPT-4 model
         self.headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}"
