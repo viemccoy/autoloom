@@ -101,4 +101,5 @@ class Generator:
         if self._session is not None:
             await self._session.close()
             self._session = None
-        await self.classifier.close()
+        if self.classifier is not None:  # Add this check
+            await self.classifier.close()
