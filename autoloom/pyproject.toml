@@ -17,6 +17,7 @@ python-dotenv = "^1.0.1"
 
 [tool.poetry.scripts]
 lui = "lui.main:main"
+tuni = "tuni.main:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -53,8 +53,8 @@ class AUTOLOOM(App):
             Container(
                 Input(placeholder="Enter your prompt...", id="prompt-input"),
                 Select([
-                    ("Llama-405b Base", "meta-llama/Meta-Llama-3.1-405B-FP8")
-                ], prompt="Select Generation Model", id="generation-model-select", value="meta-llama/Meta-Llama-3.1-405B-FP8"),
+                    ("Llama-405b Base", "meta-llama/Meta-Llama-3.1-405B")
+                ], prompt="Select Generation Model", id="generation-model-select", value="meta-llama/Meta-Llama-3.1-405B"),
                 Select([
                     ("Default gpt-4 Classifier", "gpt-4"),
                     ("Vie Classifier", "ft:gpt-4o-mini-2024-07-18:reynolds-janus:vie-classifier:AVZGAksQ")
