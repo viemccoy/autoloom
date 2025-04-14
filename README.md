@@ -3,7 +3,7 @@ by vie mccoy, jessica taylor, and evan mcmullen for morpheus systems
 
 autoloom is a program that allows you automatically navigate the latent space of base models.
 
-instructions to use the lui (loom-terminal user interface):
+instructions to use the lui:
 
 make sure you have poetry installed and a .env file with your openai and hyperbolic api keys (in the autoloom directory)
 
