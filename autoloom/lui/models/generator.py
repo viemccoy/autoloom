@@ -10,8 +10,13 @@ load_dotenv()
 
 class Generator:
     def __init__(self):
+        # Generation endpoints
         self.hyperbolic_url = "https://api.hyperbolic.xyz/v1/completions"
-        self.openai_url = "https://api.openai.com/v1/completions"
+        self.openai_completions_url = "https://api.openai.com/v1/completions"
+        
+        # Only used by classifier, not by generator
+        self.openai_chat_url = "https://api.openai.com/v1/chat/completions"
+        
         self.hyperbolic_headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {os.getenv('HYPERBOLIC_API_KEY')}"
@@ -22,6 +27,12 @@ class Generator:
         }
         self._session = None
         self.classifier = None
+        
+        # Verification of API keys
+        if not os.getenv('OPENAI_API_KEY'):
+            print("WARNING: OPENAI_API_KEY environment variable is not set")
+        if not os.getenv('HYPERBOLIC_API_KEY'):
+            print("WARNING: HYPERBOLIC_API_KEY environment variable is not set")
 
     async def __aenter__(self):
         """Async context manager entry"""
@@ -49,6 +60,7 @@ class Generator:
         # Determine which API to use based on the model
         is_openai_model = model.startswith("gpt-")
         
+        # All generation models including gpt-4-base use the completions API
         data = {
             "prompt": prompt,
             "model": model,
@@ -58,46 +70,84 @@ class Generator:
             "n": n
         }
         
-        url = self.openai_url if is_openai_model else self.hyperbolic_url
+        url = self.openai_completions_url if is_openai_model else self.hyperbolic_url
         headers = self.openai_headers if is_openai_model else self.hyperbolic_headers
         
         wait_time = 1
-        max_retries = 5
+        max_retries = 8 if model == "gpt-4-base" else 5  # More retries for GPT-4 Base
         attempts = 0
+        
+        print(f"Using max_retries: {max_retries} for model: {model}")
         
         while attempts < max_retries:
             try:
                 session = await self.get_session()
-                async with session.post(url, headers=headers, json=data) as response:
+                print(f"Making request to {url} with model {model}")
+                
+                # Increase timeout to 120 seconds specifically for GPT-4 Base
+                request_timeout = 120 if model == "gpt-4-base" else 60
+                print(f"Using timeout of {request_timeout} seconds")
+                
+                async with session.post(url, headers=headers, json=data, timeout=request_timeout) as response:
                     response_text = await response.text()
+                    print(f"Response status: {response.status}")
                     
                     # Validate response
                     try:
                         response_text.encode('utf-8').decode('utf-8')
-                        result = await response.json()
+                        result = json.loads(response_text)
                         
                         if response.status == 200 and 'choices' in result:
+                            # All generation models use the completions API with 'text' field
                             completions = [choice['text'] for choice in result['choices'] if choice.get('text')]
+                                
                             if completions:
                                 return completions
+                        else:
+                            print(f"API Error: {response_text}")
                     
-                    except (UnicodeError, json.JSONDecodeError):
-                        pass
+                    except (UnicodeError, json.JSONDecodeError) as e:
+                        print(f"Error parsing response: {str(e)}")
                     
                     # If we get here, something went wrong
                     attempts += 1
                     if attempts >= max_retries:
                         return [f"Error: Maximum retries ({max_retries}) exceeded"] * n
                     
-                    wait_time = min(wait_time * 2, 32)
+                    # For GPT-4 Base, use longer wait times between retries
+                    if model == "gpt-4-base":
+                        wait_time = min(wait_time * 2, 120)  # Up to 2 minutes for GPT-4 Base
+                    else:
+                        wait_time = min(wait_time * 2, 60)  # Up to 60s for other models
+                    
                     print(f"Retrying batch. Attempt {attempts}/{max_retries}. Waiting {wait_time}s...")
                     await asyncio.sleep(wait_time)
                     
+            except asyncio.TimeoutError:
+                print("Request timed out")
+                attempts += 1
+                if attempts >= max_retries:
+                    return [f"Error: Request timed out after multiple attempts"] * n
+                # For GPT-4 Base, use longer wait times between retries
+                if model == "gpt-4-base":
+                    wait_time = min(wait_time * 2, 120)  # Up to 2 minutes for GPT-4 Base
+                else:
+                    wait_time = min(wait_time * 2, 60)  # Up to 60s for other models
+                    
+                print(f"Timeout error. Attempt {attempts}/{max_retries}. Waiting {wait_time}s...")
+                await asyncio.sleep(wait_time)
+                
             except Exception as e:
+                print(f"Unexpected error: {str(e)}")
                 attempts += 1
                 if attempts >= max_retries:
                     return [f"Error: Maximum retries ({max_retries}) exceeded - {str(e)}"] * n
-                wait_time = min(wait_time * 2, 32)
+                # For GPT-4 Base, use longer wait times between retries
+                if model == "gpt-4-base":
+                    wait_time = min(wait_time * 2, 120)  # Up to 2 minutes for GPT-4 Base
+                else:
+                    wait_time = min(wait_time * 2, 60)  # Up to 60s for other models
+                    
                 print(f"Network error. Attempt {attempts}/{max_retries}. Waiting {wait_time}s...")
                 await asyncio.sleep(wait_time)
         
