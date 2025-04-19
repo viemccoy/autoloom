@@ -25,16 +25,30 @@ class Classifier:
 
     def _prepare_classification_prompt(self, text: str) -> List[dict]:
         """Prepare the messages for classification"""
-        return [
-            {
-                "role": "system",
-                "content": "You are a classifier. Your task is to rate the quality and coherence of text on a scale from 0-100. Respond with ONLY a number, no explanation."
-            },
-            {
-                "role": "user",
-                "content": text
-            }
-        ]
+        # For GPT-4.1, use developer role for system prompt
+        if self.model == "gpt-4.1":
+            return [
+                {
+                    "role": "developer", 
+                    "content": "You are a classifier. Your task is to rate the quality and coherence of text on a scale from 0-100. Respond with ONLY a number, no explanation."
+                },
+                {
+                    "role": "user",
+                    "content": text
+                }
+            ]
+        else:
+            # For all other models use the standard system/user roles
+            return [
+                {
+                    "role": "system",
+                    "content": "You are a classifier. Your task is to rate the quality and coherence of text on a scale from 0-100. Respond with ONLY a number, no explanation."
+                },
+                {
+                    "role": "user",
+                    "content": text
+                }
+            ]
 
     async def classify_one(self, text: str) -> int:
         """Classify a single piece of text"""

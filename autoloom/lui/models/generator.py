@@ -74,7 +74,8 @@ class Generator:
         headers = self.openai_headers if is_openai_model else self.hyperbolic_headers
         
         wait_time = 1
-        max_retries = 8 if model == "gpt-4-base" else 5  # More retries for GPT-4 Base
+        # More retries for models using completions API
+        max_retries = 8 if model in ["gpt-4-base", "gpt-3.5-turbo-instruct"] else 5
         attempts = 0
         
         print(f"Using max_retries: {max_retries} for model: {model}")
@@ -84,8 +85,8 @@ class Generator:
                 session = await self.get_session()
                 print(f"Making request to {url} with model {model}")
                 
-                # Increase timeout to 120 seconds specifically for GPT-4 Base
-                request_timeout = 120 if model == "gpt-4-base" else 60
+                # Increase timeout to 120 seconds for completions API models
+                request_timeout = 120 if model in ["gpt-4-base", "gpt-3.5-turbo-instruct"] else 60
                 print(f"Using timeout of {request_timeout} seconds")
                 
                 async with session.post(url, headers=headers, json=data, timeout=request_timeout) as response:
@@ -114,9 +115,9 @@ class Generator:
                     if attempts >= max_retries:
                         return [f"Error: Maximum retries ({max_retries}) exceeded"] * n
                     
-                    # For GPT-4 Base, use longer wait times between retries
-                    if model == "gpt-4-base":
-                        wait_time = min(wait_time * 2, 120)  # Up to 2 minutes for GPT-4 Base
+                    # For completions API models, use longer wait times between retries
+                    if model in ["gpt-4-base", "gpt-3.5-turbo-instruct"]:
+                        wait_time = min(wait_time * 2, 120)  # Up to 2 minutes for completions API models
                     else:
                         wait_time = min(wait_time * 2, 60)  # Up to 60s for other models
                     
@@ -128,9 +129,9 @@ class Generator:
                 attempts += 1
                 if attempts >= max_retries:
                     return [f"Error: Request timed out after multiple attempts"] * n
-                # For GPT-4 Base, use longer wait times between retries
-                if model == "gpt-4-base":
-                    wait_time = min(wait_time * 2, 120)  # Up to 2 minutes for GPT-4 Base
+                # For completions API models, use longer wait times between retries
+                if model in ["gpt-4-base", "gpt-3.5-turbo-instruct"]:
+                    wait_time = min(wait_time * 2, 120)  # Up to 2 minutes for completions API models
                 else:
                     wait_time = min(wait_time * 2, 60)  # Up to 60s for other models
                     
@@ -142,9 +143,9 @@ class Generator:
                 attempts += 1
                 if attempts >= max_retries:
                     return [f"Error: Maximum retries ({max_retries}) exceeded - {str(e)}"] * n
-                # For GPT-4 Base, use longer wait times between retries
-                if model == "gpt-4-base":
-                    wait_time = min(wait_time * 2, 120)  # Up to 2 minutes for GPT-4 Base
+                # For completions API models, use longer wait times between retries
+                if model in ["gpt-4-base", "gpt-3.5-turbo-instruct"]:
+                    wait_time = min(wait_time * 2, 120)  # Up to 2 minutes for completions API models
                 else:
                     wait_time = min(wait_time * 2, 60)  # Up to 60s for other models
                     

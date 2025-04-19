@@ -3,11 +3,36 @@ from textual.containers import Container, Vertical
 from textual.widgets import Header, Footer, Input, Select, Button, Static
 import asyncio
 import pyperclip
+import os
+import re
+from dotenv import load_dotenv
 
 from .components.generation_box import GenerationBox
 from .components.completion_overlay import CompletionOverlay
 from .components.quit_overlay import QuitConfirmationOverlay
 from .generation_manager import GenerationManager
+
+load_dotenv()
+
+def get_classifier_models():
+    """Load classifier models from .env file"""
+    classifier_models = [
+        ("GPT-4.1", "gpt-4.1"),  # Add the new GPT-4.1 model
+        ("Default GPT-4", os.getenv("DEFAULT_CLASSIFIER", "gpt-4")),  # Use DEFAULT_CLASSIFIER or fall back to gpt-4
+    ]
+    
+    # Scan .env for custom classifier models (keys starting with CLASSIFIER_ or ending with _CLASSIFIER)
+    for key, value in os.environ.items():
+        if key.startswith("CLASSIFIER_") or (key.endswith("_CLASSIFIER") and key != "DEFAULT_CLASSIFIER"):
+            # Format the display name by removing prefix/suffix and converting to title case
+            if key.startswith("CLASSIFIER_"):
+                display_name = key[11:].replace("_", " ").title()
+            else:  # ends with _CLASSIFIER
+                display_name = key[:-10].replace("_", " ").title()
+                
+            classifier_models.append((f"{display_name} Classifier", value))
+    
+    return classifier_models
 
 ASCII_ART = """   _____    __    __    _______    _____    __       _____      _____     __    __   
   /\___/\  /\_\  /_/\ /\_______)\ ) ___ (  /\_\     ) ___ (    ) ___ (   /_/\  /\_\  
@@ -56,12 +81,15 @@ class AUTOLOOM(App):
                 Input(placeholder="Enter your prompt...", id="prompt-input"),
                 Select([
                     ("Llama-405b Base", "meta-llama/Meta-Llama-3.1-405B"),
-                    ("GPT-4 Base", "gpt-4-base")
+                    ("GPT-4 Base", "gpt-4-base"),
+                    ("GPT-3.5 Turbo Instruct", "gpt-3.5-turbo-instruct")
                 ], prompt="Select Generation Model", id="generation-model-select", value="meta-llama/Meta-Llama-3.1-405B"),
-                Select([
-                    ("Default gpt-4 Classifier", "gpt-4"),
-                    ("Vie Classifier", "ft:gpt-4o-mini-2024-07-18:reynolds-janus:vie-classifier:AVZGAksQ")
-                ], prompt="Select Classification Model", id="classifier-model-select", value="gpt-4"),
+                Select(
+                    get_classifier_models(),
+                    prompt="Select Classification Model", 
+                    id="classifier-model-select", 
+                    value=os.getenv("DEFAULT_CLASSIFIER", "gpt-4")
+                ),
                 Container(
                     Input(placeholder="Temperature (0.0-1.0)", value="0.7", id="temp-input"),
                     Input(placeholder="Max Tokens", value="100", id="tokens-input"),
