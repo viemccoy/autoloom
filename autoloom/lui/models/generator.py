@@ -1,6 +1,7 @@
 import os
 import aiohttp
 import asyncio
+import json
 from typing import List, Tuple
 from .classifier import Classifier
 from dotenv import load_dotenv
@@ -9,10 +10,15 @@ load_dotenv()
 
 class Generator:
     def __init__(self):
-        self.url = "https://api.hyperbolic.xyz/v1/completions"
-        self.headers = {
+        self.hyperbolic_url = "https://api.hyperbolic.xyz/v1/completions"
+        self.openai_url = "https://api.openai.com/v1/completions"
+        self.hyperbolic_headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {os.getenv('HYPERBOLIC_API_KEY')}"
+        }
+        self.openai_headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}"
         }
         self._session = None
         self.classifier = None
@@ -40,6 +46,9 @@ class Generator:
         await self.get_session()
 
     async def generate_batch(self, prompt: str, model: str, max_tokens: int, temperature: float, n: int = 5) -> List[str]:
+        # Determine which API to use based on the model
+        is_openai_model = model.startswith("gpt-")
+        
         data = {
             "prompt": prompt,
             "model": model,
@@ -49,6 +58,9 @@ class Generator:
             "n": n
         }
         
+        url = self.openai_url if is_openai_model else self.hyperbolic_url
+        headers = self.openai_headers if is_openai_model else self.hyperbolic_headers
+        
         wait_time = 1
         max_retries = 5
         attempts = 0
@@ -56,7 +68,7 @@ class Generator:
         while attempts < max_retries:
             try:
                 session = await self.get_session()
-                async with session.post(self.url, headers=self.headers, json=data) as response:
+                async with session.post(url, headers=headers, json=data) as response:
                     response_text = await response.text()
                     
                     # Validate response
@@ -84,7 +96,7 @@ class Generator:
             except Exception as e:
                 attempts += 1
                 if attempts >= max_retries:
-                    return [f"Error: Maximum retries ({max_retries}) exceeded"] * n
+                    return [f"Error: Maximum retries ({max_retries}) exceeded - {str(e)}"] * n
                 wait_time = min(wait_time * 2, 32)
                 print(f"Network error. Attempt {attempts}/{max_retries}. Waiting {wait_time}s...")
                 await asyncio.sleep(wait_time)

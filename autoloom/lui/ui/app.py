@@ -9,12 +9,14 @@ from .components.completion_overlay import CompletionOverlay
 from .components.quit_overlay import QuitConfirmationOverlay
 from .generation_manager import GenerationManager
 
-ASCII_ART = """    ___    __  __  ______   ____     __    ____    ____     __  ___
-   /   |  / / / / /_  __/  / __ \   / /   / __ \  / __ \   /  |/  /
-  / /| | / / / /   / /    / / / /  / /   / / / / / / / /  / /|_/ / 
- / ___ |/ /_/ /   / /    / /_/ /  / /___/ /_/ / / /_/ /  / /  / /  
-/_/  |_|\____/   /_/     \____/  /_____/\____/  \____/  /_/  /_/   
-                                                                   """
+ASCII_ART = """   _____    __    __    _______    _____    __       _____      _____     __    __   
+  /\___/\  /\_\  /_/\ /\_______)\ ) ___ (  /\_\     ) ___ (    ) ___ (   /_/\  /\_\  
+ / / _ \ \( ( (  ) ) )\(___  __\// /\_/\ \( ( (    / /\_/\ \  / /\_/\ \  ) ) \/ ( (  
+ \ \(_)/ / \ \ \/ / /   / / /   / /_/ (_\ \\ \_\  / /_/ (_\ \/ /_/ (_\ \/_/ \  / \_\ 
+ / / _ \ \  \ \  / /   ( ( (    \ \ )_/ / // / /__\ \ )_/ / /\ \ )_/ / /\ \ \\// / / 
+( (_( )_) ) ( (__) )    \ \ \    \ \/_\/ /( (_____(\ \/_\/ /  \ \/_\/ /  )_) )( (_(  
+ \/_/ \_\/   \/__\/     /_/_/     )_____(  \/_____/ )_____(    )_____(   \_\/  \/_/  
+                                                                                     """
 
 class AUTOLOOM(App):
     CSS_PATH = "styles.css"
@@ -49,11 +51,12 @@ class AUTOLOOM(App):
         yield Header()
         yield Container(
             Static(ASCII_ART, id="ascii-art"),
-            Static("LUI v0.0.1, by Morpheus Systems", id="version"),
+            Static("LUI v0.0.2, by VIE MCCOY and Morpheus Systems", id="version"),
             Container(
                 Input(placeholder="Enter your prompt...", id="prompt-input"),
                 Select([
-                    ("Llama-405b Base", "meta-llama/Meta-Llama-3.1-405B")
+                    ("Llama-405b Base", "meta-llama/Meta-Llama-3.1-405B"),
+                    ("GPT-4 Base", "gpt-4-base")
                 ], prompt="Select Generation Model", id="generation-model-select", value="meta-llama/Meta-Llama-3.1-405B"),
                 Select([
                     ("Default gpt-4 Classifier", "gpt-4"),
