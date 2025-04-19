@@ -10,7 +10,7 @@ make sure you have poetry installed and a .env file with your openai and hyperbo
 ```bash
 git clone https://github.com/viemccoy/autoloom.git
 
-cd autoloom
+cd autoloom/autoloom
 
 poetry install
 
