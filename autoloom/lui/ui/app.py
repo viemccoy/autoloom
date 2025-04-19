@@ -47,7 +47,9 @@ class AUTOLOOM(App):
     CSS_PATH = "styles.css"
     BINDINGS = [
         ("ctrl+c", "quit", "Quit"),
-        ("ctrl+s", "show_completion", "Show Full Completion"), 
+        ("ctrl+s", "show_completion", "Show Full Completion"),
+        ("ctrl+equals", "zoom_in", "Zoom In"),
+        ("ctrl+minus", "zoom_out", "Zoom Out"),
     ]
 
     def __init__(self):
@@ -55,6 +57,7 @@ class AUTOLOOM(App):
         self.generation_manager = GenerationManager(self)
         self._status_task = None
         self.is_closing = False
+        self.zoom_level = 1.0
 
     async def action_quit(self) -> None:
         """Show quit confirmation overlay"""
@@ -71,12 +74,24 @@ class AUTOLOOM(App):
             prompt_input = self.query_one("#prompt-input")
             if prompt_input and prompt_input.value:
                 self.push_screen(CompletionOverlay(prompt_input.value))
+                
+    def action_zoom_in(self) -> None:
+        """Zoom in the UI by increasing the scale factor"""
+        if self.zoom_level < 2.0:  # Set a reasonable upper limit
+            self.zoom_level += 0.1
+            self.styles.scale_factor = self.zoom_level
+            
+    def action_zoom_out(self) -> None:
+        """Zoom out the UI by decreasing the scale factor"""
+        if self.zoom_level > 0.5:  # Set a reasonable lower limit
+            self.zoom_level -= 0.1
+            self.styles.scale_factor = self.zoom_level
 
     def compose(self) -> ComposeResult:
         yield Header()
         yield Container(
             Static(ASCII_ART, id="ascii-art"),
-            Static("LUI v0.0.2, by VIE MCCOY and Morpheus Systems", id="version"),
+            Static("LUI v0.0.3, by VIE MCCOY and Morpheus Systems", id="version"),
             Container(
                 Input(placeholder="Enter your prompt...", id="prompt-input"),
                 Select([
@@ -134,6 +149,8 @@ class AUTOLOOM(App):
         """Initialize UI elements on mount"""
         self.input_container = self.query_one("#input-container")
         self.generation_view = self.query_one("#generation-view")
+        # Initialize zoom level
+        self.styles.scale_factor = self.zoom_level
 
     def show_input_view(self):
         """Show the input view"""
