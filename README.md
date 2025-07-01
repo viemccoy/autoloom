@@ -1,6 +1,9 @@
 # AUTOLOOM
 by vie mccoy, jessica taylor, and evan mcmullen for morpheus systems
 
+![{5293CCB4-226E-4B70-ADA2-18D2CB4602B2}](https://github.com/user-attachments/assets/858b8f7a-741b-41cc-82a4-4a0c2ad93393)
+
+
 autoloom is a program that allows you automatically navigate the latent space of base models.
 
 instructions to use the lui:
